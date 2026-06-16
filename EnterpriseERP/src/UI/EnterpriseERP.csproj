@@ -20,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Configuration" />
+    <ProjectReference Include="..\Core\EnterpriseInventory.Core.csproj" />
+    <ProjectReference Include="..\Infrastructure\EnterpriseInventory.Infrastructure.csproj" />
+    <ProjectReference Include="..\Application\EnterpriseInventory.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
