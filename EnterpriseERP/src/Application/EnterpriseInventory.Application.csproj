@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>EnterpriseInventory.Application</RootNamespace>
+    <AssemblyName>EnterpriseInventory.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\EnterpriseInventory.Core.csproj" />
+    <ProjectReference Include="..\Infrastructure\EnterpriseInventory.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
