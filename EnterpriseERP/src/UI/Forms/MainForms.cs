@@ -518,3 +518,120 @@ namespace EnterpriseInventory.UI.Forms
         }
     }
 }
+
+    // Additional placeholder forms to complete the UI layer
+    public partial class SettingsForm : Form
+    {
+        public SettingsForm()
+        {
+            this.Text = "System Settings";
+            this.Size = new System.Drawing.Size(900, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Settings Module - Coming Soon\n\nFeatures:\n- Company Information\n- Tax Configuration\n- User Management\n- Role & Permission Management\n- Feature Flags\n- Backup Settings",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+
+    public partial class ReportsForm : Form
+    {
+        public ReportsForm()
+        {
+            this.Text = "Reports Center";
+            this.Size = new System.Drawing.Size(1100, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Reports Module - Coming Soon\n\nAvailable Reports:\n- Current Stock Report\n- Stock Valuation\n- Low Stock / Reorder Report\n- Near Expiry & Expired Stock\n- Product Ledger (Inventory Movement)\n- Purchase Reports\n- Sales Reports\n- Supplier Summary\n- Customer Summary\n- Fast/Slow Moving Products",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.TopCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+
+    public partial class InventoryForm : Form
+    {
+        public InventoryForm()
+        {
+            this.Text = "Inventory Management";
+            this.Size = new System.Drawing.Size(1100, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Inventory Module - Coming Soon\n\nFeatures:\n- Inventory Ledger\n- Stock Adjustments\n- Opening Stock Entry\n- Batch Management\n- Transfer Between Branches\n- Physical Count",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+
+    // Additional placeholder forms to complete the UI layer
+    public partial class SettingsForm : Form
+    {
+        public SettingsForm()
+        {
+            this.Text = "System Settings";
+            this.Size = new System.Drawing.Size(900, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Settings Module - Coming Soon\n\nFeatures:\n- Company Information\n- Tax Configuration\n- User Management\n- Role & Permission Management\n- Feature Flags\n- Backup Settings",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+
+    public partial class ReportsForm : Form
+    {
+        public ReportsForm()
+        {
+            this.Text = "Reports Center";
+            this.Size = new System.Drawing.Size(1100, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Reports Module - Coming Soon\n\nAvailable Reports:\n- Current Stock Report\n- Stock Valuation\n- Low Stock / Reorder Report\n- Near Expiry & Expired Stock\n- Product Ledger (Inventory Movement)\n- Purchase Reports\n- Sales Reports\n- Supplier Summary\n- Customer Summary\n- Fast/Slow Moving Products",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.TopCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+
+    public partial class InventoryForm : Form
+    {
+        public InventoryForm()
+        {
+            this.Text = "Inventory Management";
+            this.Size = new System.Drawing.Size(1100, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            
+            var lbl = new Label
+            {
+                Text = "Inventory Module - Coming Soon\n\nFeatures:\n- Inventory Ledger\n- Stock Adjustments\n- Opening Stock Entry\n- Batch Management\n- Transfer Between Branches\n- Physical Count",
+                Font = new System.Drawing.Font("Arial", 12),
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+            };
+            this.Controls.Add(lbl);
+        }
+    }
+}
