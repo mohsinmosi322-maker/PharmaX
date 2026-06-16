@@ -1,38 +1,22 @@
 using System;
-using System.Data;
 using System.Windows.Forms;
-using EnterpriseERP.Core.Domain;
-using EnterpriseERP.Core.Interfaces;
-using EnterpriseERP.Application.Services;
 
 namespace EnterpriseERP.UI.Forms.Transactions
 {
-    public partial class InventoryTransferForm : Form
+    public class InventoryTransferForm : BaseForm
     {
-        private readonly IInventoryService _inventoryService;
-        private readonly IProductRepository _productRepository;
-        private readonly IAuditService _auditService;
-        private readonly int _userId;
-
-        private ComboBox cmbSourceBranch;
-        private ComboBox cmbDestinationBranch;
+        private ComboBox cmbFromBranch;
+        private ComboBox cmbToBranch;
         private ComboBox cmbProduct;
-        private ComboBox cmbBatch;
+        private TextBox txtBatchNumber;
         private NumericUpDown nudQuantity;
+        private DateTimePicker dtpTransferDate;
         private TextBox txtRemarks;
-        private DateTimePicker dtpDate;
-        private Button btnSave;
-        private Button btnClose;
-        private Label lblSource, lblDestination, lblProduct, lblBatch, lblQty, lblRemarks, lblDate;
+        private Button btnTransfer;
+        private Label lblCurrentStock;
 
-        public InventoryTransferForm(IInventoryService inventoryService, IProductRepository productRepository,
-            IAuditService auditService, int userId)
+        public InventoryTransferForm()
         {
-            _inventoryService = inventoryService;
-            _productRepository = productRepository;
-            _auditService = auditService;
-            _userId = userId;
-
             InitializeComponent();
             LoadBranches();
             LoadProducts();
@@ -40,183 +24,255 @@ namespace EnterpriseERP.UI.Forms.Transactions
 
         private void InitializeComponent()
         {
-            this.Text = "Inventory Transfer Between Branches";
-            this.Size = new System.Drawing.Size(750, 550);
+            this.Text = "Inventory Transfer";
+            this.Size = new System.Drawing.Size(800, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
 
-            lblSource = new Label { Text = "Source Branch:", Location = new System.Drawing.Point(20, 20), AutoSize = true };
-            cmbSourceBranch = new ComboBox { Location = new System.Drawing.Point(150, 17), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
-            
-            lblDestination = new Label { Text = "Destination Branch:", Location = new System.Drawing.Point(20, 60), AutoSize = true };
-            cmbDestinationBranch = new ComboBox { Location = new System.Drawing.Point(180, 57), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
-            
-            lblProduct = new Label { Text = "Product:", Location = new System.Drawing.Point(20, 100), AutoSize = true };
-            cmbProduct = new ComboBox { Location = new System.Drawing.Point(150, 97), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
-            
-            lblBatch = new Label { Text = "Batch:", Location = new System.Drawing.Point(20, 140), AutoSize = true };
-            cmbBatch = new ComboBox { Location = new System.Drawing.Point(150, 137), Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
-            
-            lblQty = new Label { Text = "Quantity:", Location = new System.Drawing.Point(20, 180), AutoSize = true };
-            nudQuantity = new NumericUpDown { Location = new System.Drawing.Point(150, 177), Width = 150, Minimum = 1, Maximum = 999999 };
-            
-            lblRemarks = new Label { Text = "Remarks:", Location = new System.Drawing.Point(20, 220), AutoSize = true };
-            txtRemarks = new TextBox { Location = new System.Drawing.Point(150, 217), Width = 400, Height = 60, Multiline = true };
-            
-            lblDate = new Label { Text = "Transfer Date:", Location = new System.Drawing.Point(20, 300), AutoSize = true };
-            dtpDate = new DateTimePicker { Location = new System.Drawing.Point(150, 297), Width = 200, Value = DateTime.Today };
+            var headerPanel = CreateHeaderPanel("Inter-Branch Inventory Transfer");
+            this.Controls.Add(headerPanel);
 
-            btnSave = new Button { Text = "Save Transfer", Location = new System.Drawing.Point(20, 350), Width = 150, Height = 35, BackColor = System.Drawing.Color.Blue, ForeColor = System.Drawing.Color.White };
-            btnClose = new Button { Text = "Close", Location = new System.Drawing.Point(570, 350), Width = 150, Height = 35 };
+            var mainPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                Padding = new Padding(30),
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
+            };
 
-            btnSave.Click += BtnSave_Click;
-            btnClose.Click += (s, e) => this.Close();
+            // From Branch
+            mainPanel.Controls.Add(CreateLabel("From Branch *"));
+            cmbFromBranch = CreateComboBox(400);
+            cmbFromBranch.SelectedIndexChanged += CmbFromBranch_SelectedIndexChanged;
+            mainPanel.Controls.Add(cmbFromBranch);
+
+            // To Branch
+            mainPanel.Controls.Add(CreateLabel("To Branch *"));
+            cmbToBranch = CreateComboBox(400);
+            mainPanel.Controls.Add(cmbToBranch);
+
+            // Product
+            mainPanel.Controls.Add(CreateLabel("Product *"));
+            cmbProduct = CreateComboBox(400);
             cmbProduct.SelectedIndexChanged += CmbProduct_SelectedIndexChanged;
+            mainPanel.Controls.Add(cmbProduct);
 
-            this.Controls.AddRange(new Control[] { 
-                lblSource, cmbSourceBranch, lblDestination, cmbDestinationBranch,
-                lblProduct, cmbProduct, lblBatch, cmbBatch, lblQty, nudQuantity,
-                lblRemarks, txtRemarks, lblDate, dtpDate,
-                btnSave, btnClose 
-            });
+            // Batch Number
+            mainPanel.Controls.Add(CreateLabel("Batch Number"));
+            txtBatchNumber = CreateTextBox(400);
+            mainPanel.Controls.Add(txtBatchNumber);
+
+            // Current Stock Info
+            lblCurrentStock = new Label
+            {
+                Text = "Current Stock: 0",
+                Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold),
+                ForeColor = System.Drawing.Color.FromArgb(0, 102, 153),
+                AutoSize = true,
+                Margin = new Padding(0, 5, 0, 10)
+            };
+            mainPanel.Controls.Add(lblCurrentStock);
+
+            // Quantity
+            mainPanel.Controls.Add(CreateLabel("Quantity to Transfer *"));
+            nudQuantity = new NumericUpDown
+            {
+                Width = 400,
+                Height = 35,
+                Font = new System.Drawing.Font("Segoe UI", 9F),
+                Minimum = 1,
+                Maximum = 1000000,
+                Margin = new Padding(0, 0, 0, 15)
+            };
+            mainPanel.Controls.Add(nudQuantity);
+
+            // Transfer Date
+            mainPanel.Controls.Add(CreateLabel("Transfer Date *"));
+            dtpTransferDate = new DateTimePicker
+            {
+                Width = 400,
+                Height = 35,
+                Format = DateTimePickerFormat.Short,
+                Font = new System.Drawing.Font("Segoe UI", 9F),
+                Margin = new Padding(0, 0, 0, 15)
+            };
+            mainPanel.Controls.Add(dtpTransferDate);
+
+            // Remarks
+            mainPanel.Controls.Add(CreateLabel("Remarks"));
+            txtRemarks = CreateTextBox(400, height: 80);
+            txtRemarks.Multiline = true;
+            mainPanel.Controls.Add(txtRemarks);
+
+            // Transfer Button
+            btnTransfer = CreateButton("Execute Transfer", System.Drawing.Color.FromArgb(0, 102, 153));
+            btnTransfer.Size = new System.Drawing.Size(200, 45);
+            btnTransfer.Margin = new Padding(0, 20, 0, 0);
+            btnTransfer.Click += BtnTransfer_Click;
+            mainPanel.Controls.Add(btnTransfer);
+
+            this.Controls.Add(mainPanel);
         }
 
-        private void LoadBranches()
+        private Label CreateLabel(string text)
+        {
+            return new Label
+            {
+                Text = text,
+                Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold),
+                AutoSize = true,
+                Margin = new Padding(0, 10, 0, 5)
+            };
+        }
+
+        private TextBox CreateTextBox(int width, int height = 35)
+        {
+            return new TextBox
+            {
+                Width = width,
+                Height = height,
+                Font = new System.Drawing.Font("Segoe UI", 9F),
+                Margin = new Padding(0, 0, 0, 15),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+        }
+
+        private ComboBox CreateComboBox(int width)
+        {
+            return new ComboBox
+            {
+                Width = width,
+                Height = 35,
+                Font = new System.Drawing.Font("Segoe UI", 9F),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Margin = new Padding(0, 0, 0, 15)
+            };
+        }
+
+        private async void LoadBranches()
         {
             try
             {
-                var branches = _inventoryService.GetAllBranches();
-                cmbSourceBranch.DataSource = branches;
-                cmbSourceBranch.DisplayMember = "BranchName";
-                cmbSourceBranch.ValueMember = "BranchID";
+                cmbFromBranch.Items.Add("Main Branch");
+                cmbToBranch.Items.Add("Branch A");
+                cmbToBranch.Items.Add("Branch B");
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Error loading branches: {ex.Message}");
+            }
+        }
+
+        private async void LoadProducts()
+        {
+            try
+            {
+                var products = await InventoryService.GetActiveProductsAsync();
                 
-                cmbDestinationBranch.DataSource = branches.Clone() as DataTable;
-                cmbDestinationBranch.DisplayMember = "BranchName";
-                cmbDestinationBranch.ValueMember = "BranchID";
+                foreach (var product in products)
+                {
+                    cmbProduct.Items.Add(new { 
+                        ID = product.ProductID, 
+                        Name = $"{product.ProductCode} - {product.ProductName}" 
+                    });
+                }
+                
+                if (cmbProduct.Items.Count > 0)
+                    cmbProduct.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading branches: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError($"Error loading products: {ex.Message}");
             }
         }
 
-        private void LoadProducts()
+        private async void CmbProduct_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
             {
-                var products = _productRepository.GetAllActive();
-                cmbProduct.DataSource = products;
-                cmbProduct.DisplayMember = "ProductName";
-                cmbProduct.ValueMember = "ProductID";
+                if (cmbProduct.SelectedItem != null && cmbFromBranch.SelectedItem != null)
+                {
+                    dynamic product = cmbProduct.SelectedItem;
+                    var stock = await InventoryService.GetCurrentStockAsync(product.ID, GetCurrentBranchId());
+                    lblCurrentStock.Text = $"Current Stock: {stock.Quantity}";
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError($"Error fetching stock: {ex.Message}");
             }
         }
 
-        private void CmbProduct_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbFromBranch_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbProduct.SelectedValue != null)
-            {
-                LoadBatches((int)cmbProduct.SelectedValue);
-            }
+            CmbProduct_SelectedIndexChanged(sender, e);
         }
 
-        private void LoadBatches(int productId)
+        private int GetCurrentBranchId()
         {
-            try
-            {
-                var batches = _productRepository.GetProductBatches(productId);
-                cmbBatch.DataSource = batches;
-                cmbBatch.DisplayMember = "BatchNumber";
-                cmbBatch.ValueMember = "BatchID";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading batches: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            return 1;
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private async void BtnTransfer_Click(object sender, EventArgs e)
         {
             try
             {
-                if (cmbSourceBranch.SelectedValue == null)
+                if (cmbFromBranch.SelectedItem == null || cmbToBranch.SelectedItem == null)
                 {
-                    MessageBox.Show("Please select source branch.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ShowWarning("Please select both source and destination branches");
                     return;
                 }
 
-                if (cmbDestinationBranch.SelectedValue == null)
+                if (cmbProduct.SelectedItem == null)
                 {
-                    MessageBox.Show("Please select destination branch.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ShowWarning("Please select a product");
                     return;
                 }
 
-                if (cmbSourceBranch.SelectedValue.Equals(cmbDestinationBranch.SelectedValue))
+                if (nudQuantity.Value <= 0)
                 {
-                    MessageBox.Show("Source and destination branches must be different.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ShowWarning("Quantity must be greater than 0");
                     return;
                 }
 
-                if (cmbProduct.SelectedValue == null)
-                {
-                    MessageBox.Show("Please select a product.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                var confirm = ShowConfirm("Are you sure you want to execute this transfer?");
+                if (confirm != DialogResult.Yes)
                     return;
-                }
 
-                if (cmbBatch.SelectedValue == null)
+                dynamic product = cmbProduct.SelectedItem;
+                
+                var result = await InventoryService.TransferStockAsync(
+                    GetCurrentBranchId(),
+                    2,
+                    product.ID,
+                    txtBatchNumber.Text,
+                    (int)nudQuantity.Value,
+                    dtpTransferDate.Value,
+                    txtRemarks.Text
+                );
+
+                if (result.Success)
                 {
-                    MessageBox.Show("Please select a batch.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                int sourceBranchId = (int)cmbSourceBranch.SelectedValue;
-                int destBranchId = (int)cmbDestinationBranch.SelectedValue;
-                int productId = (int)cmbProduct.SelectedValue;
-                int batchId = (int)cmbBatch.SelectedValue;
-                int quantity = (int)nudQuantity.Value;
-                string remarks = txtRemarks.Text.Trim();
-                DateTime date = dtpDate.Value;
-
-                // Create transfer
-                var transfer = new InventoryTransfer
-                {
-                    SourceBranchID = sourceBranchId,
-                    DestinationBranchID = destBranchId,
-                    ProductID = productId,
-                    BatchID = batchId,
-                    Quantity = quantity,
-                    Remarks = remarks,
-                    TransferDate = date
-                };
-
-                bool success = _inventoryService.SaveInventoryTransfer(transfer, _userId);
-
-                if (success)
-                {
-                    MessageBox.Show("Inventory transfer saved successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    
-                    _auditService.LogAction(_userId, "Inventory Transfer", "InventoryTransfers", transfer.ProductID.ToString(),
-                        $"Transferred {quantity} units from Branch {sourceBranchId} to Branch {destBranchId}");
-                    
-                    // Clear fields
-                    nudQuantity.Value = 1;
-                    txtRemarks.Clear();
-                    cmbProduct.Focus();
+                    ShowSuccess("Inventory transferred successfully!");
+                    ClearForm();
                 }
                 else
                 {
-                    MessageBox.Show("Failed to save inventory transfer.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowError($"Transfer failed: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError($"Error transferring inventory: {ex.Message}");
             }
+        }
+
+        private void ClearForm()
+        {
+            txtBatchNumber.Clear();
+            nudQuantity.Value = 1;
+            txtRemarks.Clear();
+            lblCurrentStock.Text = "Current Stock: 0";
         }
     }
 }
