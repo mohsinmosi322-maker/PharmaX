@@ -517,7 +517,6 @@ namespace EnterpriseInventory.UI.Forms
             this.Controls.Add(lbl);
         }
     }
-}
 
     // Additional placeholder forms to complete the UI layer
     public partial class SettingsForm : Form
